@@ -1,14 +1,13 @@
-name: Node.js CI
+name: API-tests CI
 env:
-  SECRET_PASSWORD: ${{ secrets.SECRET_PASS }}
+    SECRET_PASSWORD: ${{ secrets.SECRET_PASS }}
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+   branches: [ "main" ]
   schedule:
       - cron: "0 12,14,16 * * 1-5"
-
 jobs:
   build:
 
@@ -17,26 +16,20 @@ jobs:
     strategy:
       matrix:
         node-version: [22.x]
-
+        
     steps:
     - uses: actions/checkout@v4
-
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-
     - run: npm ci
-
-    - run: npm run build --if-present
-
     - run: npm test
 
-    - name: Upload build artifact
-      if: success()  # Artefakt zostanie zapisany tylko, jeśli wcześniejsze kroki zakończą się sukcesem
-      uses: actions/upload-artifact@v3
+    - name: Upload test report
+      if: always() # Ensures that the artifact is uploaded even if tests fail
+      uses: actions/upload-artifact@v4
       with:
-        name: build-artifact       # Nazwa artefaktu
-        path: ./build              # Ścieżka do katalogu z artefaktami
-        retention-days: 30         # Przechowywanie artefaktu przez 30 dni
+        name: mochawesome-report
+        path: mochawesome-report/ 
